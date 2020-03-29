@@ -1,7 +1,8 @@
 import gym
 import pygame
 from gym import spaces
-from Rod import Rod
+from rod import Rod
+from polygon import Polygon
 import math
 
 
@@ -16,6 +17,15 @@ class RodManeuveringEnv(gym.Env):
         self.action_space = spaces.Discrete(4)
         self.rod = Rod(rod_length, start_x, start_y)
         self.reset()
+
+        self.polygons = [Polygon(72, 63, 89, 115, 128, 78, 112, 25),
+                         Polygon(42, 136, 111, 151, 168, 191, 97, 175),
+                         Polygon(217, 75, 235, 122, 285, 131, 267, 84),
+                         Polygon(365, 11, 386, 58, 437, 80, 415, 35),
+                         Polygon(353, 202, 325, 110, 310, 203, 336, 291),
+                         Polygon(98, 209, 178, 270, 171, 364, 91, 310),
+                         Polygon(307, 323, 340, 351, 342, 394, 311, 365),
+                         Polygon(336, 407, 379, 377, 430, 391, 385, 420)]
 
     def step(self, action):
         """
@@ -67,14 +77,8 @@ class RodManeuveringEnv(gym.Env):
 
         self.screen.fill((225, 225, 225))
         pygame.draw.line(self.screen, (255, 0, 0), (self.rod.head_position_x, self.rod.head_position_y), (end_x, end_y))
-        pygame.draw.polygon(self.screen, (128, 128, 128), [(72, 63), (89, 115), (128, 78), (112, 25)])
-        pygame.draw.polygon(self.screen, (128, 128, 128), [(42, 136), (111, 151), (168, 191), (97, 175)])
-        pygame.draw.polygon(self.screen, (128, 128, 128), [(217, 75), (235, 122), (285, 131), (267, 84)])
-        pygame.draw.polygon(self.screen, (128, 128, 128), [(365, 11), (386, 58), (437, 80), (415, 35)])
-        pygame.draw.polygon(self.screen, (128, 128, 128), [(353, 202), (325, 110), (310, 203), (336, 291)])
-        pygame.draw.polygon(self.screen, (128, 128, 128), [(98, 209), (178, 270), (171, 364), (91, 310)])
-        pygame.draw.polygon(self.screen, (128, 128, 128), [(307, 323), (340, 351), (342, 394), (311, 365)])
-        pygame.draw.polygon(self.screen, (128, 128, 128), [(336, 407), (379, 377), (430, 391), (385, 420)])
+        for polygon in self.polygons:
+            pygame.draw.polygon(self.screen, (128, 128, 128), polygon.get_coordinates())
 
         pygame.display.update()
 
@@ -86,6 +90,9 @@ class RodManeuveringEnv(gym.Env):
             self.reset()
             return True
         else:
+            for polygon in self.polygons:
+                if polygon.check_collision_with_line(self.rod):
+                    return True
             return False
 
     def reset(self):
