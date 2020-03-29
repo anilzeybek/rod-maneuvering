@@ -12,8 +12,8 @@ class Polygon:
         self.x4 = x4
         self.y4 = y4
 
-    def check_collision_with_line(self, rod):
-        return collision.line_polygon_collision(rod, self)
+    def check_collision_with_line(self, start_x, start_y, end_x, end_y):
+        return collision.line_polygon_collision(start_x, start_y, end_x, end_y, self)
 
     def get_coordinates(self):
         return [(self.x1, self.y1), (self.x2, self.y2), (self.x3, self.y3), (self.x4, self.y4)]

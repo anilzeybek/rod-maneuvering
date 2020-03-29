@@ -1,5 +1,5 @@
 class Rod:
-    def __init__(self, length, head_position_x, head_position_y, angle=-100):
+    def __init__(self, length, head_position_x, head_position_y, angle=260):
         self.length = length
         self.initial_values = {
             "head_position_x": head_position_x,
