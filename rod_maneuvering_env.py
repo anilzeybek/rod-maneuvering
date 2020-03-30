@@ -3,12 +3,11 @@ import pygame
 from gym import spaces
 from rod import Rod
 from polygon import Polygon
-import math
 
 
 class RodManeuveringEnv(gym.Env):
-    def __init__(self, n=30, alpha=0.1, gamma=0.97, epsilon=0.1, rod_length=67, start_x=35, start_y=185,
-                 goal_x=192, goal_y=39, goal_angle=100):
+    def __init__(self, n=30, alpha=0.1, gamma=0.97, epsilon=0.1, rod_length=180, start_x=90, start_y=450,
+                 goal_x=510, goal_y=180, goal_angle=260):
         pygame.init()
 
         self.n = n
@@ -16,106 +15,97 @@ class RodManeuveringEnv(gym.Env):
         self.gamma = gamma
         self.epsilon = epsilon
 
-        self.env_width = 225
-        self.env_height = 225
+        self.env_width = 600
+        self.env_height = 600
         self.screen = pygame.display.set_mode((self.env_width, self.env_height))
-        self.goal_x = goal_x
-        self.goal_y = goal_y
-        self.goal_angle = goal_angle
 
-        self.action_space = spaces.Discrete(4)
+        self.action_space = spaces.Discrete(6)
         self.rod = Rod(rod_length, start_x, start_y)
+        self.goal_rod = Rod(rod_length, goal_x, goal_y, goal_angle)
+
         self.reset()
 
-        self.polygons = [Polygon(36, 31, 45, 58, 64, 39, 56, 12),
-                         Polygon(21, 68, 55, 75, 84, 95, 48, 87),
-                         Polygon(108, 37, 117, 61, 142, 65, 133, 42),
-                         Polygon(182, 5, 193, 29, 218, 40, 207, 18),
-                         Polygon(176, 101, 162, 55, 155, 101, 168, 145),
-                         Polygon(49, 105, 89, 135, 85, 182, 45, 155),
-                         Polygon(153, 161, 170, 175, 171, 197, 155, 182),
-                         Polygon(168, 203, 189, 188, 215, 195, 192, 210)]
+        self.polygons = [Polygon(95, 83, 146, 32, 169, 103, 116, 153),
+                         Polygon(51, 179, 145, 203, 224, 255, 131, 232),
+                         Polygon(129, 280, 120, 412, 227, 488, 236, 360),
+                         Polygon(287, 99, 354, 111, 377, 173, 313, 161),
+                         Polygon(485, 12, 552, 45, 583, 106, 515, 78),
+                         Polygon(433, 145, 469, 270, 447, 394, 413, 273),
+                         Polygon(409, 431, 414, 490, 456, 527, 452, 468),
+                         Polygon(447, 543, 504, 505, 573, 523, 512, 562)]
 
     def step(self, action):
         """
         action == 0 -> up
         action == 1 -> down
-        action == 2 -> +10 degree
-        action == 3 -> -10 degree
+        action == 2 -> right
+        action == 3 -> left
+        action == 4 -> +10 degree
+        action == 5 -> -10 degree
         """
         assert self.action_space.contains(action)
 
-        reward = -10
+        reward = -1
 
-        if self._check_collision(self.rod.head_position_x, self.rod.head_position_y,
-                                 self.rod.head_position_x + math.cos(
-                                     math.radians(self.rod.angle)) * self.rod.length,
-                                 self.rod.head_position_y + math.sin(
-                                     math.radians(self.rod.angle)) * self.rod.length):
+        rod_positions = self.rod.get_positions()
+        if self._check_collision(rod_positions[0], rod_positions[1], rod_positions[2], rod_positions[3]):
             print("--reset--")
             self.reset()
             return self.get_obs(), 0, False, {}
 
         if action == 0:
-            dx = int(round(math.cos(math.radians(self.rod.angle)) * 10))
-            dy = int(round(math.sin(math.radians(self.rod.angle)) * 10))
-            if not self._check_collision(self.rod.head_position_x + dx, self.rod.head_position_y + dy,
-                                         self.rod.head_position_x + dx + math.cos(
-                                             math.radians(self.rod.angle)) * self.rod.length,
-                                         self.rod.head_position_y + dy + math.sin(
-                                             math.radians(self.rod.angle)) * self.rod.length):
-                self.rod.head_position_x += dx
-                self.rod.head_position_y += dy
+            virtual_positions = self.rod.add_virtual_y(-30)
+            if not self._check_collision(virtual_positions[0], virtual_positions[1], virtual_positions[2],
+                                         virtual_positions[3]):
+                self.rod.center_y -= 30
 
         elif action == 1:
-            dx = int(round(math.cos(math.radians(self.rod.angle)) * 10))
-            dy = int(round(math.sin(math.radians(self.rod.angle)) * 10))
-            if not self._check_collision(self.rod.head_position_x - dx, self.rod.head_position_y - dy,
-                                         self.rod.head_position_x - dx + math.cos(
-                                             math.radians(self.rod.angle)) * self.rod.length,
-                                         self.rod.head_position_y - dy + math.sin(
-                                             math.radians(self.rod.angle)) * self.rod.length):
-                self.rod.head_position_x -= dx
-                self.rod.head_position_y -= dy
+            virtual_positions = self.rod.add_virtual_y(30)
+            if not self._check_collision(virtual_positions[0], virtual_positions[1], virtual_positions[2],
+                                         virtual_positions[3]):
+                self.rod.center_y += 30
 
         elif action == 2:
-            if not self._check_collision(self.rod.head_position_x, self.rod.head_position_y,
-                                         self.rod.head_position_x + math.cos(
-                                             math.radians(self.rod.angle + 10)) * self.rod.length,
-                                         self.rod.head_position_y + math.sin(
-                                             math.radians(self.rod.angle + 10)) * self.rod.length):
-                self.rod.angle += 10
+            virtual_positions = self.rod.add_virtual_x(30)
+            if not self._check_collision(virtual_positions[0], virtual_positions[1], virtual_positions[2],
+                                         virtual_positions[3]):
+                self.rod.center_x += 30
 
         elif action == 3:
-            if not self._check_collision(self.rod.head_position_x, self.rod.head_position_y,
-                                         self.rod.head_position_x + math.cos(
-                                             math.radians(self.rod.angle - 10)) * self.rod.length,
-                                         self.rod.head_position_y + math.sin(
-                                             math.radians(self.rod.angle - 10)) * self.rod.length):
+            virtual_positions = self.rod.add_virtual_x(-30)
+            if not self._check_collision(virtual_positions[0], virtual_positions[1], virtual_positions[2],
+                                         virtual_positions[3]):
+                self.rod.center_x -= 30
+
+        elif action == 4:
+            if not self._check_collision(self.rod.add_virtual_angle(10)[0], self.rod.add_virtual_angle(10)[1],
+                                         self.rod.add_virtual_angle(10)[2], self.rod.add_virtual_angle(10)[3]):
+                self.rod.angle += 10
+
+        elif action == 5:
+            # if not self._check_collision(self.rod.head_position_x, self.rod.head_position_y,
+            #                              self.rod.head_position_x + math.cos(
+            #                                  math.radians(self.rod.angle - 10)) * self.rod.length,
+            #                              self.rod.head_position_y + math.sin(
+            #                                  math.radians(self.rod.angle - 10)) * self.rod.length):
+            if not self._check_collision(self.rod.add_virtual_angle(-10)[0], self.rod.add_virtual_angle(-10)[1],
+                                         self.rod.add_virtual_angle(-10)[2], self.rod.add_virtual_angle(-10)[3]):
                 self.rod.angle -= 10
 
-        if self.rod.angle < 0:
-            self.rod.angle += 360
-        self.rod.angle = self.rod.angle % 360
-
-        end_x = self.rod.head_position_x + math.cos(math.radians(self.rod.angle)) * self.rod.length
-        end_y = self.rod.head_position_y + math.sin(math.radians(self.rod.angle)) * self.rod.length
-
-        goal_end_x = self.goal_x + math.cos(math.radians(self.goal_angle)) * self.rod.length
-        goal_end_y = self.goal_y + math.sin(math.radians(self.goal_angle)) * self.rod.length
+        self.rod.fix_angle()
+        rod_positions = self.rod.get_positions()
+        goal_positions = self.goal_rod.get_positions()
 
         done = False
-        if self._is_rod_close_to_goal():
+        if self.rod.is_close_to(self.goal_rod):
             done = True
-            reward += 1000
+            reward = 100
             self.reset()
 
         self.screen.fill((225, 225, 225))
-        pygame.draw.rect(self.screen, (255, 0, 0), [self.rod.head_position_x, self.rod.head_position_y, 3, 3])
-        pygame.draw.line(self.screen, (255, 0, 0), (self.rod.head_position_x, self.rod.head_position_y), (end_x, end_y))
+        self._draw_line(rod_positions, (255, 0, 0))
+        self._draw_line(goal_positions, (0, 255, 0))
 
-        pygame.draw.rect(self.screen, (0, 255, 0), [self.goal_x, self.goal_y, 3, 3])
-        pygame.draw.line(self.screen, (0, 255, 0), (self.goal_x, self.goal_y), (goal_end_x, goal_end_y))
         for polygon in self.polygons:
             pygame.draw.polygon(self.screen, (128, 128, 128), polygon.get_coordinates())
 
@@ -123,14 +113,15 @@ class RodManeuveringEnv(gym.Env):
         return self.get_obs(), reward, done, {}
 
     def get_obs(self):
-        encrypted_angle = -99999
-        angle_list = list(range(0, 360, 10))
-        for i in range(len(angle_list)):
-            if angle_list[i] == self.rod.angle:
-                encrypted_angle = i
-                break
+        encrypted_angle = self.rod.angle // 10
+        encrypted_x = self.rod.center_x // 30
+        encrypted_y = self.rod.center_y // 30
 
-        return self.rod.head_position_x, self.rod.head_position_y, encrypted_angle
+        return encrypted_x, encrypted_y, encrypted_angle
+
+    def _draw_line(self, positions, color):
+        pygame.draw.rect(self.screen, color, [positions[0], positions[1], 3, 3])
+        pygame.draw.line(self.screen, color, (positions[0], positions[1]), (positions[2], positions[3]))
 
     def _check_collision(self, start_x, start_y, end_x, end_y):
         if start_x < 0 or start_x > self.env_width or \
@@ -146,14 +137,6 @@ class RodManeuveringEnv(gym.Env):
 
     def reset(self):
         self.rod.reset_position()
-
-    def _is_rod_close_to_goal(self):
-        if abs(self.rod.head_position_x - self.goal_x) < 10 and abs(
-                self.rod.head_position_y - self.goal_y) < 10 and abs(self.rod.angle - self.goal_angle) <= 30:
-            print("WIN!!!!")
-            return True
-
-        return False
 
     def render(self, mode='human'):
         pass
