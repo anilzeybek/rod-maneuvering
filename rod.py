@@ -65,8 +65,11 @@ class Rod:
         self.angle = self.initial_values["angle"]
 
     def is_close_to(self, goal_rod):
-        if abs(self.center_x - goal_rod.center_x) < 10 and abs(
-                self.center_y - goal_rod.center_y) < 10 and abs(self.angle - goal_rod.angle) <= 30:
+        # if abs(self.center_x - goal_rod.center_x) < 10 and abs(
+        #         self.center_y - goal_rod.center_y) < 10 and abs(self.angle - goal_rod.angle) <= 30:
+        #     print("WIN!!!!")
+        #     return True
+        if self.center_x == goal_rod.center_x and self.center_y == goal_rod.center_y and self.angle == goal_rod.angle:
             print("WIN!!!!")
             return True
         return False

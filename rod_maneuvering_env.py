@@ -8,8 +8,6 @@ from polygon import Polygon
 class RodManeuveringEnv(gym.Env):
     def __init__(self, n=30, alpha=0.1, gamma=0.97, epsilon=0.1, rod_length=180, start_x=90, start_y=450,
                  goal_x=510, goal_y=180, goal_angle=260):
-        pygame.init()
-
         self.n = n
         self.alpha = alpha
         self.gamma = gamma
@@ -24,6 +22,7 @@ class RodManeuveringEnv(gym.Env):
         self.goal_rod = Rod(rod_length, goal_x, goal_y, goal_angle)
 
         self.reset()
+        self.step_count = 0
 
         self.polygons = [Polygon(95, 83, 146, 32, 169, 103, 116, 153),
                          Polygon(51, 179, 145, 203, 224, 255, 131, 232),
@@ -83,18 +82,11 @@ class RodManeuveringEnv(gym.Env):
                 self.rod.angle += 10
 
         elif action == 5:
-            # if not self._check_collision(self.rod.head_position_x, self.rod.head_position_y,
-            #                              self.rod.head_position_x + math.cos(
-            #                                  math.radians(self.rod.angle - 10)) * self.rod.length,
-            #                              self.rod.head_position_y + math.sin(
-            #                                  math.radians(self.rod.angle - 10)) * self.rod.length):
             if not self._check_collision(self.rod.add_virtual_angle(-10)[0], self.rod.add_virtual_angle(-10)[1],
                                          self.rod.add_virtual_angle(-10)[2], self.rod.add_virtual_angle(-10)[3]):
                 self.rod.angle -= 10
 
         self.rod.fix_angle()
-        rod_positions = self.rod.get_positions()
-        goal_positions = self.goal_rod.get_positions()
 
         done = False
         if self.rod.is_close_to(self.goal_rod):
@@ -102,14 +94,10 @@ class RodManeuveringEnv(gym.Env):
             reward = 100
             self.reset()
 
-        self.screen.fill((225, 225, 225))
-        self._draw_line(rod_positions, (255, 0, 0))
-        self._draw_line(goal_positions, (0, 255, 0))
+        if self.step_count > 1:
+            self._animate()
 
-        for polygon in self.polygons:
-            pygame.draw.polygon(self.screen, (128, 128, 128), polygon.get_coordinates())
-
-        pygame.display.update()
+        self.step_count += 1
         return self.get_obs(), reward, done, {}
 
     def get_obs(self):
@@ -122,6 +110,19 @@ class RodManeuveringEnv(gym.Env):
     def _draw_line(self, positions, color):
         pygame.draw.rect(self.screen, color, [positions[0], positions[1], 3, 3])
         pygame.draw.line(self.screen, color, (positions[0], positions[1]), (positions[2], positions[3]))
+
+    def _animate(self):
+        rod_positions = self.rod.get_positions()
+        goal_positions = self.goal_rod.get_positions()
+
+        self.screen.fill((225, 225, 225))
+        self._draw_line(rod_positions, (255, 0, 0))
+        self._draw_line(goal_positions, (0, 255, 0))
+
+        for polygon in self.polygons:
+            pygame.draw.polygon(self.screen, (128, 128, 128), polygon.get_coordinates())
+
+        pygame.display.update()
 
     def _check_collision(self, start_x, start_y, end_x, end_y):
         if start_x < 0 or start_x > self.env_width or \

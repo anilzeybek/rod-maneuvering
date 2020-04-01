@@ -2,6 +2,8 @@ from rod_maneuvering_env import RodManeuveringEnv
 from priority_queue import PriorityQueue
 import pygame
 import numpy as np
+import sys
+import pickle
 import random
 
 
@@ -40,14 +42,26 @@ def leading_state_action(state):
 
 
 def main():
-    theta = 5
+    global Q
+
+    # theta = 5
     env = RodManeuveringEnv()
+    pygame.init()
+
+    if len(sys.argv) == 1:
+        infile = open("pretrainedQ.pickle", 'rb')
+        Q = pickle.load(infile)
+        infile.close()
 
     running = 1
     while running:
         event = pygame.event.poll()
         if event.type == pygame.QUIT:
             running = 0
+
+            outfile = open("pretrainedQ.pickle", 'wb')
+            pickle.dump(Q, outfile)
+            outfile.close()
 
         state = env.get_obs()
         action = policy(env, state)
