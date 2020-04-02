@@ -1,5 +1,5 @@
 # Rod Maneuvering with Prioritized Sweeping
-Lua implementation is based on Sutton & Barto Book: "Reinforcement Learning: An Introduction"
+Python implementation is based on Sutton & Barto Book: "Reinforcement Learning: An Introduction"
 
 ## Usage
 
