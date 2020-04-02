@@ -22,20 +22,14 @@ def rargmax(vector):
     return random.choice(indices)
 
 
-def policy(env, state):
+def policy(Q, env, state):
     if np.random.uniform() <= env.epsilon:
         return np.random.randint(env.action_space.n)
     else:
         return rargmax(Q[state])
 
 
-def leading_state_action(state):
-    # leading = []
-    # for key in model:
-    #     if model[key][1] == state:
-    #         leading.append(key)
-    #
-    # return leading
+def leading_state_action(state, model):
     all_leadings = [((state[0], state[1] + 1, state[2]), 0), ((state[0], state[1] - 1, state[2]), 1),
                     ((state[0] - 1, state[1], state[2]), 2), ((state[0] + 1, state[1], state[2]), 3),
                     ((state[0], state[1], state[2] - 1), 4), ((state[0], state[1], state[2] + 1), 5)]
@@ -49,7 +43,7 @@ def leading_state_action(state):
 
 
 def main():
-    global Q
+    Q, model, PQueue = initialize()
 
     theta = 0.01
     step_count = 0
@@ -72,11 +66,10 @@ def main():
             outfile.close()
 
         state = env.get_obs()
-        action = policy(env, state)
+        action = policy(Q, env, state)
         new_state, reward, done, _ = env.step(action)
 
-        print(step_count)
-        if step_count > 50000:
+        if step_count > 1:
             env.render()
             # time.sleep(0.05)
         step_count += 1
@@ -93,7 +86,7 @@ def main():
                 reward, s_prime = model[(state, action)]
                 Q[state][action] += env.alpha * (reward + env.gamma * np.max(Q[s_prime]) - Q[state][action])
 
-                for state_action in leading_state_action(state):
+                for state_action in leading_state_action(state, model):
                     r_over = model[(state_action[0], state_action[1])][0]
                     P = abs(r_over + env.gamma * np.max(Q[state]) - Q[state_action[0]][state_action[1]])
 
@@ -102,5 +95,4 @@ def main():
 
 
 if __name__ == '__main__':
-    Q, model, PQueue = initialize()
     main()
