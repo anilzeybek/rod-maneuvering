@@ -5,7 +5,7 @@ Lua implementation is based on Sutton & Barto Book: "Reinforcement Learning: An 
 
 To train from scratch:
 ```python
-python3 main.py --train
+python3 main.py train
 ```
 
 To use pre-trained Q values:
