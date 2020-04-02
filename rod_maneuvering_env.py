@@ -43,7 +43,7 @@ class RodManeuveringEnv(gym.Env):
         """
         assert self.action_space.contains(action)
 
-        reward = -1
+        reward = 0
 
         rod_positions = self.rod.get_positions()
         if self._check_collision(rod_positions[0], rod_positions[1], rod_positions[2], rod_positions[3]):
@@ -90,7 +90,7 @@ class RodManeuveringEnv(gym.Env):
         done = False
         if self.rod.is_close_to(self.goal_rod):
             done = True
-            reward = 100
+            reward = 1
             self.reset()
 
         return self.get_obs(), reward, done, {}
