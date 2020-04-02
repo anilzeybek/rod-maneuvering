@@ -5,6 +5,7 @@ import numpy as np
 import sys
 import pickle
 import random
+import time
 
 
 def initialize():
@@ -67,6 +68,8 @@ def main():
         action = policy(env, state)
         new_state, reward, done, _ = env.step(action)
         Q[state][action] += env.alpha * (reward + env.gamma * np.max(Q[new_state]) - Q[state][action])
+        env.render()
+        time.sleep(0.05)
 
         # model[(state, action)] = (reward, new_state)
         #
