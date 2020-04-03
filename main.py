@@ -8,6 +8,19 @@ import random
 import time
 
 
+def parse_arg():
+    from_scratch = False
+    render_each_step = True
+
+    if len(sys.argv) == 2 and sys.argv[1] == "train":
+        from_scratch = True
+        render_each_step = False
+    elif len(sys.argv) == 2:
+        raise ValueError("Arguments must be 'train' or blank")
+
+    return from_scratch, render_each_step
+
+
 def initialize(from_scratch):
     Q = np.zeros((21, 21, 36, 6))
     model = {}
@@ -56,12 +69,7 @@ def leading_state_action(state, model):
 def main():
     pygame.init()
 
-    from_scratch = False
-    render_each_step = True
-
-    if sys.argv[1] == "train":
-        from_scratch = True
-        render_each_step = False
+    from_scratch, render_each_step = parse_arg()
 
     Q, model, PQueue = initialize(from_scratch)
     env = RodManeuveringEnv()
@@ -86,6 +94,7 @@ def main():
 
         if render_each_step:
             env.render()
+            # time.sleep(0.5)
 
         model[(state, action)] = (reward, new_state)
         P = abs(reward + env.gamma * np.max(Q[new_state]) - Q[state][action])

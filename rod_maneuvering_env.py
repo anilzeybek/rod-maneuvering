@@ -37,7 +37,7 @@ class RodManeuveringEnv(gym.Env):
         self.text = self.font.render("Click here to animate the training. But this will slow down the process", True,
                                      (0, 255, 0))
         self.textRect = self.text.get_rect()
-        self.textRect.center = (300, 300)
+        self.textRect.center = (self.env_width // 2, self.env_height // 2)
 
     def step(self, action):
         """
@@ -128,11 +128,21 @@ class RodManeuveringEnv(gym.Env):
     def reset(self):
         self.rod.reset_position()
 
+    def _drawGrid(self):
+        for i in range(20):
+            rect = pygame.Rect(30 * i, 0, 0, 600)
+            pygame.draw.rect(self.screen, (225, 225, 225), rect, 1)
+        for i in range(20):
+            rect = pygame.Rect(0, 30 * i, 600, 0)
+            pygame.draw.rect(self.screen, (225, 225, 225), rect, 1)
+
     def render(self, mode='human'):
         rod_positions = self.rod.get_positions()
         goal_positions = self.goal_rod.get_positions()
 
-        self.screen.fill((225, 225, 225))
+        self.screen.fill((255, 255, 255))
+
+        self._drawGrid()
         self._draw_line(rod_positions, (255, 0, 0))
         self._draw_line(goal_positions, (0, 255, 0))
 
