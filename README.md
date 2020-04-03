@@ -30,6 +30,11 @@ Rewards are 0 for each step except +1 for step to goal state. When agent reaches
 <br><br>
 With this hyperparameters, learning completely happens after average of 130.000 steps.
 ## Usage
+To install requirements:
+```console
+pip install -r requirements.txt
+```
+<br>
 
 To train from scratch:
 ```console
