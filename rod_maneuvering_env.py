@@ -6,12 +6,13 @@ from polygon import Polygon
 
 
 class RodManeuveringEnv(gym.Env):
-    def __init__(self, n=30, alpha=0.1, gamma=0.97, epsilon=0.1, rod_length=180, start_x=90, start_y=450,
+    def __init__(self, n=30, alpha=0.1, gamma=0.97, epsilon=0.1, theta=0.01, rod_length=180, start_x=90, start_y=450,
                  goal_x=510, goal_y=180, goal_angle=260):
         self.n = n
         self.alpha = alpha
         self.gamma = gamma
         self.epsilon = epsilon
+        self.theta = theta
 
         self.env_width = 600
         self.env_height = 600
@@ -31,6 +32,12 @@ class RodManeuveringEnv(gym.Env):
                          Polygon(433, 145, 469, 270, 447, 394, 413, 273),
                          Polygon(409, 431, 414, 490, 456, 527, 452, 468),
                          Polygon(447, 543, 504, 505, 573, 523, 512, 562)]
+
+        self.font = pygame.font.Font(pygame.font.get_default_font(), 14)
+        self.text = self.font.render("Click here to animate the training. But this will slow down the process", True,
+                                     (0, 255, 0))
+        self.textRect = self.text.get_rect()
+        self.textRect.center = (300, 300)
 
     def step(self, action):
         """
@@ -132,4 +139,9 @@ class RodManeuveringEnv(gym.Env):
         for polygon in self.polygons:
             pygame.draw.polygon(self.screen, (128, 128, 128), polygon.get_coordinates())
 
+        pygame.display.update()
+
+    def render_load_screen(self):
+        self.screen.fill((0, 0, 0))
+        self.screen.blit(self.text, self.textRect)
         pygame.display.update()

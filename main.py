@@ -8,12 +8,23 @@ import random
 import time
 
 
-def initialize():
-    _Q = np.zeros((21, 21, 36, 6))
-    _model = {}
-    _PQueue = []
+def initialize(from_scratch):
+    Q = np.zeros((21, 21, 36, 6))
+    model = {}
+    PQueue = []
 
-    return _Q, _model, _PQueue
+    if not from_scratch:
+        infile = open("pretrainedQ.pickle", 'rb')
+        Q = pickle.load(infile)
+        infile.close()
+
+    return Q, model, PQueue
+
+
+def save_Q(Q):
+    outfile = open("pretrainedQ.pickle", 'wb')
+    pickle.dump(Q, outfile)
+    outfile.close()
 
 
 def rargmax(vector):
@@ -30,12 +41,12 @@ def policy(Q, env, state):
 
 
 def leading_state_action(state, model):
-    all_leadings = [((state[0], state[1] + 1, state[2]), 0), ((state[0], state[1] - 1, state[2]), 1),
-                    ((state[0] - 1, state[1], state[2]), 2), ((state[0] + 1, state[1], state[2]), 3),
-                    ((state[0], state[1], state[2] - 1), 4), ((state[0], state[1], state[2] + 1), 5)]
+    all_leads = [((state[0], state[1] + 1, state[2]), 0), ((state[0], state[1] - 1, state[2]), 1),
+                 ((state[0] - 1, state[1], state[2]), 2), ((state[0] + 1, state[1], state[2]), 3),
+                 ((state[0], state[1], state[2] - 1), 4), ((state[0], state[1], state[2] + 1), 5)]
 
     return_list = []
-    for i in all_leadings:
+    for i in all_leads:
         if i in model:
             return_list.append(i)
 
@@ -43,41 +54,42 @@ def leading_state_action(state, model):
 
 
 def main():
-    Q, model, PQueue = initialize()
-
-    theta = 0.01
-    step_count = 0
-    env = RodManeuveringEnv()
     pygame.init()
 
-    if len(sys.argv) == 1:
-        infile = open("pretrainedQ.pickle", 'rb')
-        Q = pickle.load(infile)
-        infile.close()
+    from_scratch = False
+    render_each_step = True
+
+    if sys.argv[1] == "train":
+        from_scratch = True
+        render_each_step = False
+
+    Q, model, PQueue = initialize(from_scratch)
+    env = RodManeuveringEnv()
+
+    if not render_each_step:
+        env.render_load_screen()
 
     running = 1
     while running:
         event = pygame.event.poll()
         if event.type == pygame.QUIT:
             running = 0
+            save_Q(Q)
+            quit(0)
 
-            outfile = open("pretrainedQ.pickle", 'wb')
-            pickle.dump(Q, outfile)
-            outfile.close()
+        elif from_scratch and event.type == pygame.MOUSEBUTTONDOWN:
+            render_each_step = True
 
         state = env.get_obs()
         action = policy(Q, env, state)
         new_state, reward, done, _ = env.step(action)
 
-        if step_count > 1:
+        if render_each_step:
             env.render()
-            # time.sleep(0.05)
-        step_count += 1
 
-        # Q[state][action] += env.alpha * (reward + env.gamma * np.max(Q[new_state]) - Q[state][action])
         model[(state, action)] = (reward, new_state)
         P = abs(reward + env.gamma * np.max(Q[new_state]) - Q[state][action])
-        if P > theta:
+        if P > env.theta:
             heapq.heappush(PQueue, (-P, (state, action)))
 
         for _ in range(env.n):
@@ -90,7 +102,7 @@ def main():
                     r_over = model[(state_action[0], state_action[1])][0]
                     P = abs(r_over + env.gamma * np.max(Q[state]) - Q[state_action[0]][state_action[1]])
 
-                    if P > theta:
+                    if P > env.theta:
                         heapq.heappush(PQueue, (-P, (state_action[0], state_action[1])))
 
 
