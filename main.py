@@ -1,24 +1,21 @@
 from rod_maneuvering_env import RodManeuveringEnv
 import pygame
 import numpy as np
-import sys
 import pickle
 import heapq
 import random
+import argparse
 import time
 
 
 def parse_arg():
-    from_scratch = False
-    render_each_step = True
+    parser = argparse.ArgumentParser(description="Rod Maneuvering with Prioritized Sweeping")
+    parser.add_argument("-t", "--train", dest="from_scratch", action="store_true", help="train from scratch")
+    parser.add_argument("-s", "--slow", dest="slow", action="store_true", help="slow down the animation")
+    parser.add_argument("-q", "--q-learning", dest="q_learning",
+                        action="store_true", help="use q-learning instead of prioritized sweeping")
 
-    if len(sys.argv) == 2 and sys.argv[1] == "train":
-        from_scratch = True
-        render_each_step = False
-    elif len(sys.argv) == 2:
-        raise ValueError("Arguments must be 'train' or blank")
-
-    return from_scratch, render_each_step
+    return parser.parse_args()
 
 
 def initialize(from_scratch):
@@ -66,16 +63,8 @@ def leading_state_action(state, model):
     return return_list
 
 
-def main():
-    pygame.init()
-
-    from_scratch, render_each_step = parse_arg()
-
-    Q, model, PQueue = initialize(from_scratch)
-    env = RodManeuveringEnv()
-
-    if not render_each_step:
-        env.render_load_screen()
+def prioritized_sweeping(args, env, render_each_step):
+    Q, model, PQueue = initialize(args.from_scratch)
 
     running = 1
     while running:
@@ -85,7 +74,7 @@ def main():
             save_Q(Q)
             quit(0)
 
-        elif from_scratch and event.type == pygame.MOUSEBUTTONDOWN:
+        elif args.from_scratch and event.type == pygame.MOUSEBUTTONDOWN:
             render_each_step = True
 
         state = env.get_obs()
@@ -94,7 +83,8 @@ def main():
 
         if render_each_step:
             env.render()
-            # time.sleep(0.5)
+            if args.slow:
+                time.sleep(0.05)
 
         model[(state, action)] = (reward, new_state)
         P = abs(reward + env.gamma * np.max(Q[new_state]) - Q[state][action])
@@ -113,6 +103,48 @@ def main():
 
                     if P > env.theta:
                         heapq.heappush(PQueue, (-P, (state_action[0], state_action[1])))
+
+
+def q_learning(args, env, render_each_step):
+    Q, _, _ = initialize(args.from_scratch)
+
+    running = 1
+    while running:
+        event = pygame.event.poll()
+        if event.type == pygame.QUIT:
+            running = 0
+            save_Q(Q)
+            quit(0)
+
+        elif args.from_scratch and event.type == pygame.MOUSEBUTTONDOWN:
+            render_each_step = True
+
+        state = env.get_obs()
+        action = policy(Q, env, state)
+        new_state, reward, done, _ = env.step(action)
+        Q[state][action] += env.alpha * (reward + env.gamma * np.max(Q[new_state]) - Q[state][action])
+
+        if render_each_step:
+            env.render()
+            if args.slow:
+                time.sleep(0.05)
+
+
+def main():
+    pygame.init()
+
+    args = parse_arg()
+    env = RodManeuveringEnv()
+
+    render_each_step = True
+    if args.from_scratch:
+        render_each_step = False
+        env.render_load_screen()
+
+    if args.q_learning:
+        q_learning(args, env, render_each_step)
+    else:
+        prioritized_sweeping(args, env, render_each_step)
 
 
 if __name__ == '__main__':

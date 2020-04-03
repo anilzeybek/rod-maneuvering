@@ -17,22 +17,45 @@ All the obstacles are hard-coded so that if you change the resolution of the scr
 Also if you want to change the positions of the initial and goal state, be sure to make their center locations multiple of 30, and angles to multiple of 10.
 
 ## Hyperparameters
-Default values for environment:
+Default values of hyperparameters:
 * <img src="https://render.githubusercontent.com/render/math?math=\alpha = 0.1">
 * <img src="https://render.githubusercontent.com/render/math?math=\gamma = 0.97">
 * <img src="https://render.githubusercontent.com/render/math?math=\epsilon = 0.1">
 * <img src="https://render.githubusercontent.com/render/math?math=\theta = 0.01">
 
+Rewards are 0 for each step except +1 for step to goal state. When agent reaches to goal state, episode ends and positions reset.
 ## Usage
 
 To train from scratch:
 ```python
-python3 main.py train
+python3 main.py -t
 ```
+If you use this flag, initial screen will give you warning. If you click it, the animation will start but this will slow down the process of learning. So wait until some convergence to see the results faster
+
+<br>
 
 To use pre-trained Q values:
 ```python
 python3 main.py
 ```
+
+<br>
+
+To slow down the animate while using pre-trained values to see the actions more clear:
+```python
+python3 main.py -s
+```
+Do not try to use both -t and -s flags at the same time because with -s flag agent will wait 0.05 secs after each step. So training with that much wait is impossible.
+
+<br>
+
+If you want to try learning with q-learning:
+```python
+python3 main.py -q -t
+```
+With that, use q-learning instead of prioritized sweeping and learn from scratch.
+
+<br>
+
 
 ![](sequ.gif)
