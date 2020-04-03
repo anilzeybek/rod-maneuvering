@@ -28,7 +28,9 @@ Default values of hyperparameters:
 
 Rewards are 0 for each step except +1 for step to goal state. When agent reaches to goal state, episode ends and positions reset.
 <br><br>
-With this hyperparameters, learning completely happens after average of 130.000 steps.
+With this hyperparameters, learning completely happens after average of 130.000 steps.  
+If you use q-learning instead of prioritized sweeping, average of 1.720.000 steps required to learn completely.
+
 ## Usage
 To install requirements:
 ```console

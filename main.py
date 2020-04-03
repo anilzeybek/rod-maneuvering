@@ -66,11 +66,9 @@ def leading_state_action(state, model):
 def prioritized_sweeping(args, env, render_each_step):
     Q, model, PQueue = initialize(args.from_scratch)
 
-    running = 1
-    while running:
+    while True:
         event = pygame.event.poll()
         if event.type == pygame.QUIT:
-            running = 0
             save_Q(Q)
             quit(0)
 
@@ -108,11 +106,9 @@ def prioritized_sweeping(args, env, render_each_step):
 def q_learning(args, env, render_each_step):
     Q, _, _ = initialize(args.from_scratch)
 
-    running = 1
-    while running:
+    while True:
         event = pygame.event.poll()
         if event.type == pygame.QUIT:
-            running = 0
             save_Q(Q)
             quit(0)
 
