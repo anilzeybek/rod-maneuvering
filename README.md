@@ -12,7 +12,7 @@ There are 2 differences from the original example:
     6. -10 Degree: Rod rotates -10 degrees from the center
 <br><br>
 
-With this actions and states, shortest path from starting state to ending state has 47 steps 
+With this actions and states, shortest path from starting state to ending state has 47 steps. 
 <br><br>
 All the obstacles are hard-coded so that if you change the resolution of the screen, you should also change the obstacle positions.
 <br><br>
