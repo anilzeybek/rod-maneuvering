@@ -20,11 +20,11 @@ Also if you want to change the positions of the initial and goal state, be sure 
 
 ## Hyperparameters
 Default values of hyperparameters:
-* <img src="https://render.githubusercontent.com/render/math?math=\alpha = 0.1" alt="alpha=0.1">
-* <img src="https://render.githubusercontent.com/render/math?math=\gamma = 0.97" alt="gamma=0.97">
-* <img src="https://render.githubusercontent.com/render/math?math=\epsilon = 0.1" alt="epsilon=0.1">
-* <img src="https://render.githubusercontent.com/render/math?math=\theta = 0.01" alt="theta=0.01">
-* <img src="https://render.githubusercontent.com/render/math?math=\n = 30" alt="n=30">
+* α = 0.1
+* γ = 0.97
+* ε = 0.1
+* θ = 0.01
+* n = 30
 
 Rewards are 0 for each step except +1 for step to goal state. When agent reaches to goal state, episode ends and positions reset.
 <br><br>
